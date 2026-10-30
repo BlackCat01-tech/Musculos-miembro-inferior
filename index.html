@@ -506,6 +506,66 @@
             line-height: 1.5
         }
 
+        /* VERIFICADOR */
+        #report {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            place-items: center;
+            background: #03101899;
+            padding: 16px
+        }
+
+        #report.on {
+            display: grid
+        }
+
+        #report .box {
+            width: min(560px, 100%);
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--b);
+            border-radius: 18px;
+            background: #0a2b3d;
+            padding: 20px
+        }
+
+        #report h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px
+        }
+
+        #report .sub {
+            color: var(--m);
+            font-size: .82rem;
+            margin-bottom: 12px
+        }
+
+        #rlist {
+            overflow-y: auto;
+            flex: 1;
+            font-size: .85rem;
+            line-height: 1.7;
+            border-top: 1px solid var(--b);
+            padding-top: 10px
+        }
+
+        #rlist .ok {
+            color: #8be9b0
+        }
+
+        #rlist .no {
+            color: #ffb8aa
+        }
+
+        #report .btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px
+        }
+
         /* RESPONSIVE */
         @media (max-width: 1100px) {
             .result-body {
@@ -559,7 +619,8 @@
             <h1>Músculos del miembro inferior</h1>
             <span class="divider"></span>
             <span class="label" id="count"></span>
-            <button class="toggle" id="study" aria-pressed="false" title="Oculta origen, inserción y acción hasta que hagas clic en cada uno"><i></i>Modo estudio</button>
+            <button class="toggle" id="check" style="margin-left:auto" title="Comprueba en Wikimedia Commons cuáles músculos tienen animación">Verificar imágenes</button>
+            <button class="toggle" id="study" style="margin-left:0" aria-pressed="false" title="Oculta origen, inserción y acción hasta que hagas clic en cada uno"><i></i>Modo estudio</button>
         </header>
 
         <div id="body">
@@ -592,7 +653,7 @@
                             <div class="field"><span class="label">Inserción</span><p id="f-i"></p></div>
                             <div class="field accion"><span class="label">Acción</span><p id="f-a"></p></div>
                             <div class="hint">Haz clic en cada recuadro para revelar la respuesta.</div>
-                            <div class="credit" id="credit">Animaciones enlazadas desde Wikimedia Commons.</div>
+                            <div class="credit" id="credit">Imágenes enlazadas desde Wikimedia Commons / Wikipedia.</div>
                         </div>
                     </div>
                 </div>
@@ -600,16 +661,31 @@
         </div>
     </div>
 
+    <div id="report" role="dialog" aria-label="Verificación de imágenes">
+        <div class="box">
+            <h3>Verificación de imágenes</h3>
+            <div class="sub" id="rsub">Consultando Wikimedia Commons…</div>
+            <div id="rlist"></div>
+            <div class="btns">
+                <button class="toggle" id="rcopy" style="margin-left:0" hidden>Copiar los que faltan</button>
+                <button class="toggle" id="rclose" style="margin-left:auto">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Contenido tomado de Musculos_miembro_inferior.xlsx
-        const groups = [{"region": "Muslo Anterior", "muscles": [{"n": "Sartorio", "slug": "sartorio", "o": "Espina ilíaca anterosuperior (EIAS).", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Flexiona, abduce y rota lateralmente el muslo; flexiona la pierna.", "q": ["Sartorius"], "must": ["sartorius"]}, {"n": "Pectíneo", "slug": "pectineo", "o": "Rama superior (horizontal) del pubis.", "i": "Línea pectínea del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Pectineus"], "must": ["pectineus"]}, {"n": "Recto femoral (cuádriceps)", "slug": "recto_femoral", "o": "Cabeza directa: espina ilíaca anteroinferior (EIAI). Cabeza refleja: por encima del borde superior del acetábulo.", "i": "Base de la rótula y tuberosidad de la tibia, vía ligamento rotuliano.", "a": "Extiende la pierna (rodilla); flexiona el muslo (cadera).", "q": ["Rectus femoris"], "must": ["rectus femoris"]}, {"n": "Vasto intermedio o crural (cuádriceps)", "slug": "vasto_intermedio_o_crural", "o": "Superficie anterior y lateral del fémur.", "i": "Base de la rótula y tuberosidad de la tibia, vía ligamento rotuliano.", "a": "Extiende la pierna.", "q": ["Vastus intermedius"], "must": ["vastus intermedius"]}, {"n": "Vasto lateral o externo (cuádriceps)", "slug": "vasto_lateral_o_externo", "o": "Septo intermuscular lateral, labio lateral de la línea áspera y tuberosidad glútea.", "i": "Base y borde lateral de la rótula, retináculo patelar y tuberosidad de la tibia (ligamento rotuliano).", "a": "Extiende la pierna.", "q": ["Vastus lateralis"], "must": ["vastus lateralis"]}, {"n": "Vasto medial o interno (cuádriceps)", "slug": "vasto_medial_o_interno", "o": "Septo intermuscular medial y labio medial de la línea áspera.", "i": "Base y borde medial de la rótula, retináculo patelar medial y tuberosidad de la tibia (ligamento rotuliano).", "a": "Extiende la pierna.", "q": ["Vastus medialis"], "must": ["vastus medialis"]}, {"n": "Articular de la rodilla (subcrural)", "slug": "articular_de_la_rodilla", "o": "Superficie anterior del fémur, por encima de la superficie patelar.", "i": "Cápsula articular de la rodilla.", "a": "Eleva (tensa) la cápsula articular de la rodilla durante la extensión.", "q": ["Articularis genus"], "must": ["articularis genus"]}]}, {"region": "Muslo Medial", "muscles": [{"n": "Aductor menor (adductor brevis)", "slug": "aductor_menor", "o": "Rama inferior del pubis.", "i": "Línea pectínea y parte proximal de la línea áspera del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Adductor brevis"], "must": ["adductor brevis"]}, {"n": "Aductor mediano o largo (adductor longus)", "slug": "aductor_mediano_o_largo", "o": "Porción medial de la rama superior (horizontal) del pubis.", "i": "Tercio medio de la línea áspera del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Adductor longus"], "must": ["adductor longus"]}, {"n": "Aductor mayor (adductor magnus)", "slug": "aductor_mayor", "o": "Rama isquiopubiana y tuberosidad isquiática.", "i": "Línea áspera del fémur; la parte isquiocondílea se inserta en el tubérculo del aductor (cóndilo medial del fémur).", "a": "Aduce, flexiona y rota medialmente el muslo; la parte isquiocondílea extiende el muslo.", "q": ["Adductor magnus"], "must": ["adductor magnus"]}, {"n": "Grácil o recto interno (gracilis)", "slug": "gracil_o_recto_interno", "o": "Sínfisis del pubis y rama inferior del pubis.", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Aduce, flexiona y rota medialmente el muslo; flexiona la pierna.", "q": ["Gracilis"], "must": ["gracilis"]}]}, {"region": "Muslo Posterior", "muscles": [{"n": "Bíceps femoral", "slug": "biceps_femoral", "o": "Cabeza larga: tuberosidad isquiática. Cabeza corta: labio lateral de la línea áspera.", "i": "Cabeza del peroné y cóndilo lateral de la tibia.", "a": "Extiende el muslo; flexiona la pierna (y la rota lateralmente con la rodilla flexionada).", "q": ["Biceps femoris"], "must": ["biceps femoris"]}, {"n": "Semimembranoso", "slug": "semimembranoso", "o": "Parte superior de la superficie externa de la tuberosidad isquiática.", "i": "Cóndilo medial de la tibia, mediante expansiones tendinosas (pars reflexa, ligamento poplíteo oblicuo, aponeurosis poplítea).", "a": "Extiende el muslo; flexiona la pierna (y la rota medialmente con la rodilla flexionada).", "q": ["Semimembranosus"], "must": ["semimembranosus"]}, {"n": "Semitendinoso", "slug": "semitendinoso", "o": "Parte inferior de la superficie medial de la tuberosidad isquiática (tendón común con la cabeza larga del bíceps).", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Extiende el muslo; flexiona la pierna (y la rota medialmente con la rodilla flexionada).", "q": ["Semitendinosus"], "must": ["semitendinosus"]}]}, {"region": "Pierna Anterior", "muscles": [{"n": "Tibial anterior", "slug": "tibial_anterior", "o": "Cóndilo lateral y 2/3 superiores de la cara lateral de la tibia; membrana interósea.", "i": "Cara medial del cuneiforme medial y base del primer metatarsiano.", "a": "Dorsiflexión e inversión del pie.", "q": ["Tibialis anterior"], "must": ["tibialis anterior"]}, {"n": "Extensor largo de los dedos", "slug": "extensor_largo_de_los_dedos", "o": "Cóndilo lateral de la tibia, cara anterior del peroné y porción superior de la membrana interósea.", "i": "Expansión extensora (aponeurosis dorsal) de los dedos 2 a 5.", "a": "Extiende los dedos 2 a 5; dorsiflexión del pie.", "q": ["Extensor digitorum longus"], "must": ["extensor digitorum longus"]}, {"n": "Extensor largo del dedo gordo (hallux)", "slug": "extensor_largo_del_dedo_gordo", "o": "Mitad medial de la cara anterior del peroné y membrana interósea.", "i": "Base de la falange distal del hallux.", "a": "Extiende las articulaciones metatarsofalángica e interfalángica del hallux; dorsiflexión del pie.", "q": ["Extensor hallucis longus"], "must": ["extensor hallucis longus"]}, {"n": "Peroneo anterior o fibular tercero", "slug": "peroneo_anterior_o_fibular_tercero", "o": "Parte distal de la cara anterior del peroné.", "i": "Dorso de la diáfisis (base) del 5º metatarsiano.", "a": "Dorsiflexión y eversión del pie.", "q": ["Fibularis tertius", "Peroneus tertius"], "must": ["fibularis tertius", "peroneus tertius"]}]}, {"region": "Pierna Lateral", "muscles": [{"n": "Peroneo lateral corto (fibular corto)", "slug": "peroneo_lateral_corto", "o": "Tercio inferior de la superficie lateral del peroné.", "i": "Tuberosidad (apófisis estiloides) de la base del 5º metatarsiano.", "a": "Flexión plantar y eversión del pie.", "q": ["Fibularis brevis", "Peroneus brevis"], "must": ["fibularis brevis", "peroneus brevis"]}, {"n": "Peroneo lateral largo (fibular largo)", "slug": "peroneo_lateral_largo", "o": "Cabeza y 2/3 superiores de la superficie lateral del peroné.", "i": "Cruza la planta del pie: cuneiforme medial y base del 1er metatarsiano.", "a": "Flexión plantar y eversión del pie; sostiene el arco transverso.", "q": ["Fibularis longus", "Peroneus longus"], "must": ["fibularis longus", "peroneus longus"]}]}, {"region": "Pierna Posterior", "muscles": [{"n": "Tibial posterior", "slug": "tibial_posterior", "o": "Membrana interósea, cara posterior del peroné y cara posterolateral de la tibia.", "i": "Tuberosidad del escafoides, cuneiforme medial y metatarsianos 2 a 4.", "a": "Flexión plantar e inversión del pie; sostiene el arco longitudinal.", "q": ["Tibialis posterior"], "must": ["tibialis posterior"]}, {"n": "Flexor largo de los dedos", "slug": "flexor_largo_de_los_dedos", "o": "Mitad medial de la cara posterior de la tibia.", "i": "Base de las falanges distales de los dedos 2 a 5.", "a": "Flexiona los dedos 2 a 5; flexión plantar e inversión del pie.", "q": ["Flexor digitorum longus"], "must": ["flexor digitorum longus"]}, {"n": "Flexor largo del dedo gordo (hallux)", "slug": "flexor_largo_del_dedo_gordo", "o": "2/3 inferiores de la cara posterior del peroné.", "i": "Base de la falange distal del hallux.", "a": "Flexiona el hallux; flexión plantar del pie; importante en el despegue de la marcha.", "q": ["Flexor hallucis longus"], "must": ["flexor hallucis longus"]}, {"n": "Sóleo", "slug": "soleo", "o": "Cabeza y cuarto superior del peroné, línea del sóleo y borde medial de la tibia.", "i": "Cara posterior del calcáneo, vía tendón de Aquiles.", "a": "Flexión plantar del pie (mantiene la postura erecta).", "q": ["Soleus"], "must": ["soleus"]}, {"n": "Gastrocnemio o gemelos", "slug": "gastrocnemio_o_gemelos", "o": "Cabeza medial: por encima del cóndilo femoral medial. Cabeza lateral: por encima del cóndilo femoral lateral.", "i": "Cara posterior del calcáneo, vía tendón de Aquiles.", "a": "Flexión plantar del pie; flexiona la pierna.", "q": ["Gastrocnemius"], "must": ["gastrocnemius"]}, {"n": "Plantar delgado", "slug": "plantar_delgado", "o": "Por encima del cóndilo lateral del fémur (junto a la cabeza lateral del gastrocnemio).", "i": "Cara posterior del calcáneo, medial al tendón de Aquiles.", "a": "Flexión plantar del pie; flexiona débilmente la pierna.", "q": ["Plantaris"], "must": ["plantaris"]}, {"n": "Poplíteo", "slug": "popliteo", "o": "Cóndilo lateral del fémur.", "i": "Superficie posterior de la tibia, por encima de la línea del sóleo.", "a": "Flexiona y rota medialmente la pierna ('destraba' la rodilla); tensa la cápsula posterior.", "q": ["Popliteus"], "must": ["popliteus"]}]}, {"region": "Pie", "muscles": [{"n": "Extensor corto de los dedos (pedio)", "slug": "extensor_corto_de_los_dedos", "o": "Superficie superolateral del calcáneo.", "i": "Expansión extensora de los dedos 2 a 4.", "a": "Extiende los dedos 2 a 4.", "q": ["Extensor digitorum brevis"], "must": ["extensor digitorum brevis"]}, {"n": "Extensor corto del hallux", "slug": "extensor_corto_del_hallux", "o": "Superficie superolateral del calcáneo (porción medial del pedio).", "i": "Expansión extensora de la falange proximal del hallux.", "a": "Extiende el hallux.", "q": ["Extensor hallucis brevis"], "must": ["extensor hallucis brevis"]}, {"n": "Abductor del hallux", "slug": "abductor_del_hallux", "o": "Lado medial de la tuberosidad del calcáneo.", "i": "Lado medial de la base de la falange proximal del hallux.", "a": "Abduce el hallux; flexiona la articulación metatarsofalángica.", "q": ["Abductor hallucis"], "must": ["abductor hallucis"]}, {"n": "Flexor corto del hallux", "slug": "flexor_corto_del_hallux", "o": "Cuboides, cuneiforme lateral, ligamento plantar largo y tendón del tibial posterior.", "i": "Base de la falange proximal del hallux (cabezas medial y lateral, con los sesamoideos).", "a": "Flexiona la articulación metatarsofalángica del hallux.", "q": ["Flexor hallucis brevis"], "must": ["flexor hallucis brevis"]}, {"n": "Aductor del hallux", "slug": "aductor_del_hallux", "o": "Cabeza oblicua: ligamento plantar largo, cuboides, cuneiforme lateral y bases de metatarsianos 2 a 4. Cabeza transversa: cápsulas de las articulaciones metatarsofalángicas 3 a 5.", "i": "Sesamoideo lateral y base de la falange proximal del hallux (lado lateral).", "a": "Aduce el hallux; mantiene el arco transverso.", "q": ["Adductor hallucis"], "must": ["adductor hallucis"]}, {"n": "Flexor corto de los dedos", "slug": "flexor_corto_de_los_dedos", "o": "Tuberosidad del calcáneo, aponeurosis plantar y septos intermusculares.", "i": "Base de las falanges medias de los dedos 2 a 5.", "a": "Flexiona las articulaciones metatarsofalángicas e interfalángicas proximales de los dedos 2 a 5.", "q": ["Flexor digitorum brevis"], "must": ["flexor digitorum brevis"]}, {"n": "Cuadrado plantar (flexor accesorio)", "slug": "cuadrado_plantar", "o": "Porción anterior del calcáneo (caras medial y lateral) y ligamento plantar largo.", "i": "Tendón del flexor largo de los dedos.", "a": "Asiste al flexor largo de los dedos y corrige su línea de tracción.", "q": ["Quadratus plantae"], "must": ["quadratus plantae"]}, {"n": "Lumbricales (4)", "slug": "lumbricales", "o": "Tendones del flexor largo de los dedos.", "i": "Lado medial de la expansión extensora de los dedos 2 a 5.", "a": "Flexionan las metatarsofalángicas y extienden las interfalángicas de los dedos 2 a 5.", "q": ["Lumbricals of the foot", "Lumbrical muscles foot"], "must": ["lumbrical"]}, {"n": "Abductor del dedo pequeño (5º dedo)", "slug": "abductor_del_dedo_pequeno", "o": "Lados medial y lateral de la tuberosidad del calcáneo.", "i": "Lado lateral de la base de la falange proximal del 5º dedo.", "a": "Abduce el 5º dedo; flexiona la articulación metatarsofalángica.", "q": ["Abductor digiti minimi foot"], "must": ["abductor digiti minimi"]}, {"n": "Flexor corto del dedo pequeño (5º dedo)", "slug": "flexor_corto_del_dedo_pequeno", "o": "Base del 5º metatarsiano.", "i": "Lado lateral de la base de la falange proximal del 5º dedo.", "a": "Flexiona la articulación metatarsofalángica del 5º dedo.", "q": ["Flexor digiti minimi brevis foot"], "must": ["flexor digiti minimi brevis"]}, {"n": "Interóseos dorsales (4)", "slug": "interoseos_dorsales", "o": "Diáfisis de los metatarsianos adyacentes (dos cabezas cada uno).", "i": "Base de la falange proximal del 2º dedo (ambos lados) y de los dedos 3 y 4 (lado lateral); expansión extensora.", "a": "Abducen los dedos 2 a 4 (respecto al eje del 2º dedo); flexionan las metatarsofalángicas y extienden las interfalángicas.", "q": ["Dorsal interossei of the foot"], "must": ["dorsal interossei"]}, {"n": "Interóseos plantares (3)", "slug": "interoseos_plantares", "o": "Base y lado medial de los metatarsianos 3 a 5.", "i": "Base de la falange proximal y expansión extensora de los dedos 3 a 5.", "a": "Aducen los dedos 3 a 5 (hacia el 2º dedo); flexionan las metatarsofalángicas y extienden las interfalángicas.", "q": ["Plantar interossei of the foot"], "must": ["plantar interossei"]}]}];
+        const groups = [{"region": "Muslo Anterior", "muscles": [{"n": "Sartorio", "slug": "sartorio", "o": "Espina ilíaca anterosuperior (EIAS).", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Flexiona, abduce y rota lateralmente el muslo; flexiona la pierna.", "q": ["Sartorius"], "must": ["sartorius"], "wiki": ["Sartorius muscle"]}, {"n": "Pectíneo", "slug": "pectineo", "o": "Rama superior (horizontal) del pubis.", "i": "Línea pectínea del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Pectineus"], "must": ["pectineus"], "wiki": ["Pectineus muscle"]}, {"n": "Recto femoral (cuádriceps)", "slug": "recto_femoral", "o": "Cabeza directa: espina ilíaca anteroinferior (EIAI). Cabeza refleja: por encima del borde superior del acetábulo.", "i": "Base de la rótula y tuberosidad de la tibia, vía ligamento rotuliano.", "a": "Extiende la pierna (rodilla); flexiona el muslo (cadera).", "q": ["Rectus femoris"], "must": ["rectus femoris"], "wiki": ["Rectus femoris muscle"]}, {"n": "Vasto intermedio o crural (cuádriceps)", "slug": "vasto_intermedio_o_crural", "o": "Superficie anterior y lateral del fémur.", "i": "Base de la rótula y tuberosidad de la tibia, vía ligamento rotuliano.", "a": "Extiende la pierna.", "q": ["Vastus intermedius"], "must": ["vastus intermedius"], "wiki": ["Vastus intermedius muscle"]}, {"n": "Vasto lateral o externo (cuádriceps)", "slug": "vasto_lateral_o_externo", "o": "Septo intermuscular lateral, labio lateral de la línea áspera y tuberosidad glútea.", "i": "Base y borde lateral de la rótula, retináculo patelar y tuberosidad de la tibia (ligamento rotuliano).", "a": "Extiende la pierna.", "q": ["Vastus lateralis"], "must": ["vastus lateralis"], "wiki": ["Vastus lateralis muscle"]}, {"n": "Vasto medial o interno (cuádriceps)", "slug": "vasto_medial_o_interno", "o": "Septo intermuscular medial y labio medial de la línea áspera.", "i": "Base y borde medial de la rótula, retináculo patelar medial y tuberosidad de la tibia (ligamento rotuliano).", "a": "Extiende la pierna.", "q": ["Vastus medialis"], "must": ["vastus medialis"], "wiki": ["Vastus medialis muscle"]}, {"n": "Articular de la rodilla (subcrural)", "slug": "articular_de_la_rodilla", "o": "Superficie anterior del fémur, por encima de la superficie patelar.", "i": "Cápsula articular de la rodilla.", "a": "Eleva (tensa) la cápsula articular de la rodilla durante la extensión.", "q": ["Articularis genus"], "must": ["articularis genus"], "wiki": ["Articularis genus muscle"]}]}, {"region": "Muslo Medial", "muscles": [{"n": "Aductor menor (adductor brevis)", "slug": "aductor_menor", "o": "Rama inferior del pubis.", "i": "Línea pectínea y parte proximal de la línea áspera del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Adductor brevis"], "must": ["adductor brevis"], "wiki": ["Adductor brevis muscle"]}, {"n": "Aductor mediano o largo (adductor longus)", "slug": "aductor_mediano_o_largo", "o": "Porción medial de la rama superior (horizontal) del pubis.", "i": "Tercio medio de la línea áspera del fémur.", "a": "Aduce, flexiona y rota medialmente el muslo.", "q": ["Adductor longus"], "must": ["adductor longus"], "wiki": ["Adductor longus muscle"]}, {"n": "Aductor mayor (adductor magnus)", "slug": "aductor_mayor", "o": "Rama isquiopubiana y tuberosidad isquiática.", "i": "Línea áspera del fémur; la parte isquiocondílea se inserta en el tubérculo del aductor (cóndilo medial del fémur).", "a": "Aduce, flexiona y rota medialmente el muslo; la parte isquiocondílea extiende el muslo.", "q": ["Adductor magnus"], "must": ["adductor magnus"], "wiki": ["Adductor magnus muscle"]}, {"n": "Grácil o recto interno (gracilis)", "slug": "gracil_o_recto_interno", "o": "Sínfisis del pubis y rama inferior del pubis.", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Aduce, flexiona y rota medialmente el muslo; flexiona la pierna.", "q": ["Gracilis"], "must": ["gracilis"], "wiki": ["Gracilis muscle"]}]}, {"region": "Muslo Posterior", "muscles": [{"n": "Bíceps femoral", "slug": "biceps_femoral", "o": "Cabeza larga: tuberosidad isquiática. Cabeza corta: labio lateral de la línea áspera.", "i": "Cabeza del peroné y cóndilo lateral de la tibia.", "a": "Extiende el muslo; flexiona la pierna (y la rota lateralmente con la rodilla flexionada).", "q": ["Biceps femoris"], "must": ["biceps femoris"], "wiki": ["Biceps femoris muscle"]}, {"n": "Semimembranoso", "slug": "semimembranoso", "o": "Parte superior de la superficie externa de la tuberosidad isquiática.", "i": "Cóndilo medial de la tibia, mediante expansiones tendinosas (pars reflexa, ligamento poplíteo oblicuo, aponeurosis poplítea).", "a": "Extiende el muslo; flexiona la pierna (y la rota medialmente con la rodilla flexionada).", "q": ["Semimembranosus"], "must": ["semimembranosus"], "wiki": ["Semimembranosus muscle"]}, {"n": "Semitendinoso", "slug": "semitendinoso", "o": "Parte inferior de la superficie medial de la tuberosidad isquiática (tendón común con la cabeza larga del bíceps).", "i": "Superficie medial de la tibia (pes anserinus superficial).", "a": "Extiende el muslo; flexiona la pierna (y la rota medialmente con la rodilla flexionada).", "q": ["Semitendinosus"], "must": ["semitendinosus"], "wiki": ["Semitendinosus muscle"]}]}, {"region": "Pierna Anterior", "muscles": [{"n": "Tibial anterior", "slug": "tibial_anterior", "o": "Cóndilo lateral y 2/3 superiores de la cara lateral de la tibia; membrana interósea.", "i": "Cara medial del cuneiforme medial y base del primer metatarsiano.", "a": "Dorsiflexión e inversión del pie.", "q": ["Tibialis anterior"], "must": ["tibialis anterior"], "wiki": ["Tibialis anterior muscle"]}, {"n": "Extensor largo de los dedos", "slug": "extensor_largo_de_los_dedos", "o": "Cóndilo lateral de la tibia, cara anterior del peroné y porción superior de la membrana interósea.", "i": "Expansión extensora (aponeurosis dorsal) de los dedos 2 a 5.", "a": "Extiende los dedos 2 a 5; dorsiflexión del pie.", "q": ["Extensor digitorum longus"], "must": ["extensor digitorum longus"], "wiki": ["Extensor digitorum longus muscle"]}, {"n": "Extensor largo del dedo gordo (hallux)", "slug": "extensor_largo_del_dedo_gordo", "o": "Mitad medial de la cara anterior del peroné y membrana interósea.", "i": "Base de la falange distal del hallux.", "a": "Extiende las articulaciones metatarsofalángica e interfalángica del hallux; dorsiflexión del pie.", "q": ["Extensor hallucis longus"], "must": ["extensor hallucis longus"], "wiki": ["Extensor hallucis longus muscle"]}, {"n": "Peroneo anterior o fibular tercero", "slug": "peroneo_anterior_o_fibular_tercero", "o": "Parte distal de la cara anterior del peroné.", "i": "Dorso de la diáfisis (base) del 5º metatarsiano.", "a": "Dorsiflexión y eversión del pie.", "q": ["Fibularis tertius", "Peroneus tertius"], "must": ["fibularis tertius", "peroneus tertius"], "wiki": ["Fibularis tertius muscle"]}]}, {"region": "Pierna Lateral", "muscles": [{"n": "Peroneo lateral corto (fibular corto)", "slug": "peroneo_lateral_corto", "o": "Tercio inferior de la superficie lateral del peroné.", "i": "Tuberosidad (apófisis estiloides) de la base del 5º metatarsiano.", "a": "Flexión plantar y eversión del pie.", "q": ["Fibularis brevis", "Peroneus brevis"], "must": ["fibularis brevis", "peroneus brevis"], "wiki": ["Fibularis brevis muscle"]}, {"n": "Peroneo lateral largo (fibular largo)", "slug": "peroneo_lateral_largo", "o": "Cabeza y 2/3 superiores de la superficie lateral del peroné.", "i": "Cruza la planta del pie: cuneiforme medial y base del 1er metatarsiano.", "a": "Flexión plantar y eversión del pie; sostiene el arco transverso.", "q": ["Fibularis longus", "Peroneus longus"], "must": ["fibularis longus", "peroneus longus"], "wiki": ["Fibularis longus muscle"]}]}, {"region": "Pierna Posterior", "muscles": [{"n": "Tibial posterior", "slug": "tibial_posterior", "o": "Membrana interósea, cara posterior del peroné y cara posterolateral de la tibia.", "i": "Tuberosidad del escafoides, cuneiforme medial y metatarsianos 2 a 4.", "a": "Flexión plantar e inversión del pie; sostiene el arco longitudinal.", "q": ["Tibialis posterior"], "must": ["tibialis posterior"], "wiki": ["Tibialis posterior muscle"]}, {"n": "Flexor largo de los dedos", "slug": "flexor_largo_de_los_dedos", "o": "Mitad medial de la cara posterior de la tibia.", "i": "Base de las falanges distales de los dedos 2 a 5.", "a": "Flexiona los dedos 2 a 5; flexión plantar e inversión del pie.", "q": ["Flexor digitorum longus"], "must": ["flexor digitorum longus"], "wiki": ["Flexor digitorum longus muscle"]}, {"n": "Flexor largo del dedo gordo (hallux)", "slug": "flexor_largo_del_dedo_gordo", "o": "2/3 inferiores de la cara posterior del peroné.", "i": "Base de la falange distal del hallux.", "a": "Flexiona el hallux; flexión plantar del pie; importante en el despegue de la marcha.", "q": ["Flexor hallucis longus"], "must": ["flexor hallucis longus"], "wiki": ["Flexor hallucis longus muscle"]}, {"n": "Sóleo", "slug": "soleo", "o": "Cabeza y cuarto superior del peroné, línea del sóleo y borde medial de la tibia.", "i": "Cara posterior del calcáneo, vía tendón de Aquiles.", "a": "Flexión plantar del pie (mantiene la postura erecta).", "q": ["Soleus"], "must": ["soleus"], "wiki": ["Soleus muscle"]}, {"n": "Gastrocnemio o gemelos", "slug": "gastrocnemio_o_gemelos", "o": "Cabeza medial: por encima del cóndilo femoral medial. Cabeza lateral: por encima del cóndilo femoral lateral.", "i": "Cara posterior del calcáneo, vía tendón de Aquiles.", "a": "Flexión plantar del pie; flexiona la pierna.", "q": ["Gastrocnemius"], "must": ["gastrocnemius"], "wiki": ["Gastrocnemius muscle"]}, {"n": "Plantar delgado", "slug": "plantar_delgado", "o": "Por encima del cóndilo lateral del fémur (junto a la cabeza lateral del gastrocnemio).", "i": "Cara posterior del calcáneo, medial al tendón de Aquiles.", "a": "Flexión plantar del pie; flexiona débilmente la pierna.", "q": ["Plantaris"], "must": ["plantaris"], "wiki": ["Plantaris muscle"]}, {"n": "Poplíteo", "slug": "popliteo", "o": "Cóndilo lateral del fémur.", "i": "Superficie posterior de la tibia, por encima de la línea del sóleo.", "a": "Flexiona y rota medialmente la pierna ('destraba' la rodilla); tensa la cápsula posterior.", "q": ["Popliteus"], "must": ["popliteus"], "wiki": ["Popliteus muscle"]}]}, {"region": "Pie", "muscles": [{"n": "Extensor corto de los dedos (pedio)", "slug": "extensor_corto_de_los_dedos", "o": "Superficie superolateral del calcáneo.", "i": "Expansión extensora de los dedos 2 a 4.", "a": "Extiende los dedos 2 a 4.", "q": ["Extensor digitorum brevis"], "must": ["extensor digitorum brevis"], "wiki": ["Extensor digitorum brevis muscle"]}, {"n": "Extensor corto del hallux", "slug": "extensor_corto_del_hallux", "o": "Superficie superolateral del calcáneo (porción medial del pedio).", "i": "Expansión extensora de la falange proximal del hallux.", "a": "Extiende el hallux.", "q": ["Extensor hallucis brevis"], "must": ["extensor hallucis brevis"], "wiki": ["Extensor hallucis brevis muscle"]}, {"n": "Abductor del hallux", "slug": "abductor_del_hallux", "o": "Lado medial de la tuberosidad del calcáneo.", "i": "Lado medial de la base de la falange proximal del hallux.", "a": "Abduce el hallux; flexiona la articulación metatarsofalángica.", "q": ["Abductor hallucis"], "must": ["abductor hallucis"], "wiki": ["Abductor hallucis muscle"]}, {"n": "Flexor corto del hallux", "slug": "flexor_corto_del_hallux", "o": "Cuboides, cuneiforme lateral, ligamento plantar largo y tendón del tibial posterior.", "i": "Base de la falange proximal del hallux (cabezas medial y lateral, con los sesamoideos).", "a": "Flexiona la articulación metatarsofalángica del hallux.", "q": ["Flexor hallucis brevis"], "must": ["flexor hallucis brevis"], "wiki": ["Flexor hallucis brevis muscle"]}, {"n": "Aductor del hallux", "slug": "aductor_del_hallux", "o": "Cabeza oblicua: ligamento plantar largo, cuboides, cuneiforme lateral y bases de metatarsianos 2 a 4. Cabeza transversa: cápsulas de las articulaciones metatarsofalángicas 3 a 5.", "i": "Sesamoideo lateral y base de la falange proximal del hallux (lado lateral).", "a": "Aduce el hallux; mantiene el arco transverso.", "q": ["Adductor hallucis"], "must": ["adductor hallucis"], "wiki": ["Adductor hallucis muscle"]}, {"n": "Flexor corto de los dedos", "slug": "flexor_corto_de_los_dedos", "o": "Tuberosidad del calcáneo, aponeurosis plantar y septos intermusculares.", "i": "Base de las falanges medias de los dedos 2 a 5.", "a": "Flexiona las articulaciones metatarsofalángicas e interfalángicas proximales de los dedos 2 a 5.", "q": ["Flexor digitorum brevis"], "must": ["flexor digitorum brevis"], "wiki": ["Flexor digitorum brevis muscle of foot", "Flexor digitorum brevis muscle"]}, {"n": "Cuadrado plantar (flexor accesorio)", "slug": "cuadrado_plantar", "o": "Porción anterior del calcáneo (caras medial y lateral) y ligamento plantar largo.", "i": "Tendón del flexor largo de los dedos.", "a": "Asiste al flexor largo de los dedos y corrige su línea de tracción.", "q": ["Quadratus plantae"], "must": ["quadratus plantae"], "wiki": ["Quadratus plantae muscle"]}, {"n": "Lumbricales (4)", "slug": "lumbricales", "o": "Tendones del flexor largo de los dedos.", "i": "Lado medial de la expansión extensora de los dedos 2 a 5.", "a": "Flexionan las metatarsofalángicas y extienden las interfalángicas de los dedos 2 a 5.", "q": ["Lumbricals of the foot", "Lumbrical muscles foot"], "must": ["lumbrical"], "wiki": ["Lumbricals of the foot"]}, {"n": "Abductor del dedo pequeño (5º dedo)", "slug": "abductor_del_dedo_pequeno", "o": "Lados medial y lateral de la tuberosidad del calcáneo.", "i": "Lado lateral de la base de la falange proximal del 5º dedo.", "a": "Abduce el 5º dedo; flexiona la articulación metatarsofalángica.", "q": ["Abductor digiti minimi foot"], "must": ["abductor digiti minimi"], "wiki": ["Abductor digiti minimi muscle of foot"]}, {"n": "Flexor corto del dedo pequeño (5º dedo)", "slug": "flexor_corto_del_dedo_pequeno", "o": "Base del 5º metatarsiano.", "i": "Lado lateral de la base de la falange proximal del 5º dedo.", "a": "Flexiona la articulación metatarsofalángica del 5º dedo.", "q": ["Flexor digiti minimi brevis foot"], "must": ["flexor digiti minimi brevis"], "wiki": ["Flexor digiti minimi brevis muscle of foot"]}, {"n": "Interóseos dorsales (4)", "slug": "interoseos_dorsales", "o": "Diáfisis de los metatarsianos adyacentes (dos cabezas cada uno).", "i": "Base de la falange proximal del 2º dedo (ambos lados) y de los dedos 3 y 4 (lado lateral); expansión extensora.", "a": "Abducen los dedos 2 a 4 (respecto al eje del 2º dedo); flexionan las metatarsofalángicas y extienden las interfalángicas.", "q": ["Dorsal interossei of the foot"], "must": ["dorsal interossei"], "wiki": ["Dorsal interossei of the foot"]}, {"n": "Interóseos plantares (3)", "slug": "interoseos_plantares", "o": "Base y lado medial de los metatarsianos 3 a 5.", "i": "Base de la falange proximal y expansión extensora de los dedos 3 a 5.", "a": "Aducen los dedos 3 a 5 (hacia el 2º dedo); flexionan las metatarsofalángicas y extienden las interfalángicas.", "q": ["Plantar interossei of the foot"], "must": ["plantar interossei"], "wiki": ["Plantar interossei muscles", "Plantar interossei muscles of the foot"]}]}];
 
         // ---- Imágenes enlazadas desde Wikimedia Commons (no se guardan en tu PC) ----
         // Si quieres fijar un GIF concreto para un músculo, pega aquí su enlace directo:
         //   const URLS = { sartorio: 'https://upload.wikimedia.org/wikipedia/commons/.../archivo.gif' };
         const URLS = {};
         const API = 'https://commons.wikimedia.org/w/api.php';
-        const CACHE_KEY = 'miembro_inferior_urls_v1';
+        const CACHE_KEY = 'miembro_inferior_urls_v2';
+        const WIKI_API = 'https://en.wikipedia.org/w/api.php';
+        // Láminas de Gray's Anatomy (dominio público) verificadas en Commons
+        const FIJOS = { interoseos_dorsales: 'Gray446.png', interoseos_plantares: 'Gray447.png' };
         const LOCAL_DIR = 'img/';   // respaldo opcional si algún día guardas imágenes propias
 
         const items = groups.flatMap(g => g.muscles.map(m => ({ ...m, group: g.region })));
@@ -669,9 +745,9 @@
         try { cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) { }
         function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { } }
 
-        async function api(params) {
+        async function api(params, base = API) {
             const qs = new URLSearchParams({ ...params, format: 'json', formatversion: '2', origin: '*' });
-            const r = await fetch(API + '?' + qs);
+            const r = await fetch(base + '?' + qs);
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
         }
@@ -696,6 +772,10 @@
 
         async function resolve(s) {
             if (URLS[s.slug]) return { url: URLS[s.slug] };
+            if (FIJOS[s.slug]) {
+                const f = FIJOS[s.slug];
+                return { url: 'https://commons.wikimedia.org/wiki/Special:FilePath/' + f + '?width=1000', page: 'https://commons.wikimedia.org/wiki/File:' + f, title: 'File:' + f, src: 'gray' };
+            }
             if (cache[s.slug]) return cache[s.slug];
 
             // 1) nombres exactos (una sola consulta para todos los candidatos)
@@ -723,12 +803,31 @@
                 }
                 if (best && best.p > 0) break;
             }
-            if (!best || best.p <= 0) return null;
-            const info = await api({ action: 'query', titles: best.t, prop: 'imageinfo', iiprop: 'url' });
-            const out = fileInfo(info.query.pages[0]);
-            if (!out) return null;
-            cache[s.slug] = out; saveCache();
-            return out;
+            if (best && best.p > 0) {
+                const info = await api({ action: 'query', titles: best.t, prop: 'imageinfo', iiprop: 'url' });
+                const out = fileInfo(info.query.pages[0]);
+                if (out) { cache[s.slug] = out; saveCache(); return out; }
+            }
+
+            // 3) respaldo: imagen principal del artículo de Wikipedia (lámina o foto)
+            const w = await wikiImage(s);
+            if (w) { cache[s.slug] = w; saveCache(); }
+            return w;
+        }
+
+        async function wikiImage(s) {
+            const r = await api({ action: 'query', titles: s.wiki.join('|'), redirects: 1, prop: 'pageimages', piprop: 'thumbnail|name', pithumbsize: 1000, pilimit: 'max' }, WIKI_API);
+            const q = r.query || {};
+            const map = {};
+            [...(q.normalized || []), ...(q.redirects || [])].forEach(m => map[m.from] = m.to);
+            const byTitle = new Map((q.pages || []).filter(p => !p.missing && p.thumbnail).map(p => [p.title, p]));
+            for (const t of s.wiki) {
+                let name = map[t] || t;
+                name = map[name] || name;
+                const p = byTitle.get(name);
+                if (p) return { url: p.thumbnail.source, page: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(p.title.replace(/ /g, '_')), title: p.pageimage || p.title, src: 'wiki' };
+            }
+            return null;
         }
 
         function showError(s, msg) {
@@ -747,9 +846,11 @@
             img.onload = () => { if (token !== current) return; load.style.display = 'none'; img.style.display = 'block'; };
             img.onerror = () => { if (token !== current) return; delete cache[s.slug]; saveCache(); tryLocal(s, 'No fue posible cargar esta animación.'); };
             img.src = r.url;
-            $('#credit').innerHTML = r.page
-                ? 'Animación: <a href="' + r.page + '" target="_blank" rel="noopener" style="color:var(--c2)">Wikimedia Commons</a> (autor y licencia en la página del archivo).'
-                : 'Animación enlazada desde un enlace propio.';
+            const lk = (txt) => '<a href="' + r.page + '" target="_blank" rel="noopener" style="color:var(--c2)">' + txt + '</a>';
+            $('#credit').innerHTML = !r.page ? 'Imagen enlazada desde un enlace propio.'
+                : r.src === 'wiki' ? 'Imagen del artículo de ' + lk('Wikipedia') + ' (autor y licencia en la página del archivo).'
+                : r.src === 'gray' ? 'Lámina de Gray\'s Anatomy (dominio público), ' + lk('Wikimedia Commons') + '.'
+                : 'Animación: ' + lk('Wikimedia Commons') + ' (autor y licencia en la página del archivo).';
         }
 
         function tryLocal(s, msg) {
@@ -779,7 +880,7 @@
             err.style.display = 'none';
             load.style.display = 'grid';
             img.alt = 'Animación anatómica: ' + s.n;
-            $('#credit').textContent = 'Animaciones enlazadas desde Wikimedia Commons.';
+            $('#credit').textContent = 'Imágenes enlazadas desde Wikimedia Commons / Wikipedia.';
             loadImage(s, n);
         }
 
@@ -792,6 +893,33 @@
             info.querySelectorAll('.field p').forEach(p => p.classList.remove('shown'));
         };
         info.querySelectorAll('.field p').forEach(p => p.addEventListener('click', () => p.classList.add('shown')));
+
+        // Verificador: comprueba los 39 músculos y lista los que no tienen imagen
+        let checking = false, missingList = [];
+        $('#check').onclick = async () => {
+            $('#report').classList.add('on');
+            if (checking) return;
+            checking = true; missingList = [];
+            const rl = $('#rlist'); rl.innerHTML = ''; $('#rcopy').hidden = true;
+            let ok = 0;
+            for (let i = 0; i < items.length; i++) {
+                const s = items[i];
+                $('#rsub').textContent = 'Consultando… ' + (i + 1) + ' de ' + items.length;
+                const row = document.createElement('div');
+                try {
+                    const r = await resolve(s);
+                    if (r) { ok++; row.className = 'ok'; row.textContent = '✓ ' + s.n + ' → ' + (r.title ? r.title.replace('File:', '') : 'enlace propio') + (r.src === 'wiki' ? '  [Wikipedia]' : r.src === 'gray' ? '  [Gray]' : ''); }
+                    else { missingList.push(s.n); row.className = 'no'; row.textContent = '✗ ' + s.n + ' (sin GIF en Commons)'; }
+                } catch (e) { missingList.push(s.n); row.className = 'no'; row.textContent = '✗ ' + s.n + ' (error de conexión: ' + (e.message || e) + ')'; }
+                rl.append(row); rl.scrollTop = rl.scrollHeight;
+                await new Promise(r => setTimeout(r, 120));
+            }
+            $('#rsub').textContent = ok + ' con imagen · ' + missingList.length + ' sin imagen';
+            $('#rcopy').hidden = !missingList.length;
+            checking = false;
+        };
+        $('#rclose').onclick = () => $('#report').classList.remove('on');
+        $('#rcopy').onclick = () => { navigator.clipboard?.writeText(missingList.join('\n')); $('#rcopy').textContent = 'Copiado'; };
 
         // Búsqueda y teclado
         $('#search').addEventListener('input', e => draw(e.target.value));
